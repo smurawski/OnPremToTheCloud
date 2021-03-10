@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "contentVersion": "4.0.0.0",
     "parameters": {
         "location": {
             "type": "string",
@@ -60,15 +60,16 @@
     },
     "functions": [],
     "variables": {
-        "configurationZipName": "MercHealthConfig.ps1.zip"
+        "configurationZipName": "MercHealthConfig.ps1.zip",
+        "vmDiskStorageName": "[take(concat('vm', replace(guid(resourceGroup().id),'-','')),24)]"
     },
     "resources": [
         {
-            "name": "vmosdiskstorage",
+            "name": "[variables('vmDiskStorageName')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "tags": {
-                "displayName": "vmOsDiskStorage"
+                "displayName": "[variables('vmDiskStorageName')]"
             },
             "location": "[parameters('location')]",
             "kind": "StorageV2",
@@ -88,7 +89,7 @@
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
-                    "domainNameLabel": "mercuryhealth"
+                    "domainNameLabel": "[concat('mercuryhealth-', parameters('azureDevOpsEnvironmentName'))]"
                 }
             }
         },
@@ -182,7 +183,7 @@
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'vmNic')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', 'vmosdiskstorage')]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('vmDiskStorageName'))]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -277,7 +278,7 @@
     "outputs": {
         "hostname": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'vmPublicIp')).dnsSettings.fqdn]"
+            "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', 'vmPublicIp')).dnsSettings.fqdn)]"
         }
     }
 }

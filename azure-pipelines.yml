@@ -59,7 +59,7 @@ stages:
           publishLocation: 'pipeline'
 
 
-  - stage: DeployToTest
+  - stage: DeployToDevelopment
     dependsOn: Build
     variables:
       - name: websiteName

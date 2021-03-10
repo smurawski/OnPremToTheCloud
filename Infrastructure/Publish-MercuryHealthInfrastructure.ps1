@@ -1,11 +1,12 @@
 param (
-    $ResourceGroupName = 'onpremtothecloud',
-    $ManagementResourceGroupName = ($ResourceGroupName + '-mgmt'),
+    $ResourceGroupName = 'optcdev',
+    $ManagementResourceGroupName = 'optc-mgmt',
     $StorageAccountName = 'optcdsc',
     $StorageContainerName = 'configurations',
     $Location = 'eastus',
     $AzureDevOpsToken = $env:AzureDevOpsEnvironmentPat,
-    $VMName = 'MercuryHealthDev',
+    $AzureDevOpsEnvironmentName = 'Development',
+    $VMName = 'MHDev',
     [switch]$FreshStart,
     [switch]$ManagementRGOnly,
     [switch]$ApplicationRGOnly
@@ -42,7 +43,6 @@ if ($FreshStart) {
     Write-Host "Waiting for the resource groups to delete."
     $Jobs | Receive-Job -Wait | Out-Null
     Write-Host "Resource groups have been deleted."
-
 }
 
 Write-Host "Checking Azure Policy status"
@@ -145,6 +145,7 @@ if (-not $ManagementRGOnly) {
     $ParametersFile = get-content './ApplicationRG.parameters.json' -raw | ConvertFrom-Json
     $ParametersFile.parameters.dscBlobStorageUri.value = $DscArchiveStorageUri
     $ParametersFile.parameters.azureDevOpsToken.value = $AzureDevOpsToken
+    $ParametersFile.parameters.azureDevOpsEnvironmentName.value = $AzureDevOpsEnvironmentName
     $ParametersFile.parameters.vmname.value = $VMName
     $ParametersFile | 
     ConvertTo-Json | 
@@ -167,10 +168,13 @@ if (-not $ManagementRGOnly) {
         Mode                  = 'Complete'
         Force                 = $true
     }
-    New-AzResourceGroupDeployment @FullDeploymentParameters
+    $WebAddress = (New-AzResourceGroupDeployment @FullDeploymentParameters -ErrorAction Stop).Outputs["hostname"].Value
     Remove-Item -Path ./ApplicationRG.current.parameters.json -Force
-}
 
-$DSCStatus = Get-AzVMDscExtensionStatus -ResourceGroupName $ResourceGroupName -VMName $VMName
-$DSCStatus.StatusMessage
-$DSCStatus.DscConfigurationLog
+    $DSCStatus = Get-AzVMDscExtensionStatus -ResourceGroupName $ResourceGroupName -VMName $VMName
+    $DSCStatus.StatusMessage
+    $DSCStatus.DscConfigurationLog
+
+    Write-Host "You can now deploy to $AzureDevOpsEnvironmentName."
+    Write-Host "The website will be available at $WebAddress"
+}

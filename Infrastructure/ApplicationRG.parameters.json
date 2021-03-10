@@ -18,7 +18,7 @@
             "value": "P@ssw0rd!414"
         },
         "azureDevOpsEnvironmentName": {
-            "value": "Development"
+            "value": "REPLACEME"
         },
         "azureDevOpsProject": {
             "value": "OnPremToTheCloud"
