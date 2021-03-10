@@ -11,8 +11,6 @@ param (
     [switch]$ManagementRGOnly,
     [switch]$ApplicationRGOnly
 )
-# This is set in a variable in the ApplicationRG deployment.
-# If you change this, then you have to update the ARM template
 
 if ([string]::IsNullOrEmpty($AzureDevOpsToken)) {
     Write-Warning "This provisioning process needs a Personal Access Token capable of adding a VM to an environment in your Azure DevOps project."
