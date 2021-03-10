@@ -6,3 +6,4 @@ obj/
 /src/MercuryHealth.Sql/MercuryHealth.Sql.jfm
 *.dbmdl
 *.orig
+/Infrastructure/ExportedTemplate-OnPremToTheCloud-RG/*
